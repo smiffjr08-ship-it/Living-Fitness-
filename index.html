@@ -274,6 +274,80 @@
         toggleAuthMode.addEventListener('click', () => {
             isSignUpMode = !isSignUpMode;
             authTitle.textContent = isSignUpMode ? "Create Account" : "Welcome to Living Fitness";
+            authSubmitBtn.textConten    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, where, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // ==========================================
+        // 1. CLOUD DATABASE & AUTH CONFIGURATION (FIREBASE)
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyDJyDbxplOJoCe-bJP9JACf5Zs-u2lY-b8", 
+            authDomain: "living-fitness-ai.firebaseapp.com",
+            projectId: "living-fitness-ai",
+            storageBucket: "living-fitness-ai.appspot.com",
+            messagingSenderId: "30528190971",
+            appId: "1:30528190971:web:cb1f034c2dd690b20cb3ee"
+        };
+
+        let app, auth, db;
+        try {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+        } catch (e) {
+            console.error("Firebase initialization failed:", e);
+        }
+
+        // State variables
+        let currentUser = null;
+        let isSignUpMode = false;
+        let logsUnsubscribe = null;
+
+        // Dom Elements
+        const authContainer = document.getElementById('authContainer');
+        const dashboardContainer = document.getElementById('dashboardContainer');
+        const apiConfigContainer = document.getElementById('apiConfigContainer');
+        const authForm = document.getElementById('authForm');
+        const authEmail = document.getElementById('authEmail');
+        const authPassword = document.getElementById('authPassword');
+        const authTitle = document.getElementById('authTitle');
+        const authSubmitBtn = document.getElementById('authSubmitBtn');
+        const toggleAuthMode = document.getElementById('toggleAuthMode');
+        const userProfile = document.getElementById('userProfile');
+        const userDisplayEmail = document.getElementById('userDisplayEmail');
+        const logoutBtn = document.getElementById('logoutBtn');
+
+        // ==========================================
+        // 2. USER LOGIN & AUTHENTICATION MANAGEMENT
+        // ==========================================
+        if (auth) {
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    currentUser = user;
+                    userDisplayEmail.textContent = user.email;
+                    authContainer.classList.add('hidden');
+                    dashboardContainer.classList.remove('hidden');
+                    userProfile.classList.remove('hidden');
+                    apiConfigContainer.classList.remove('hidden');
+                    setupRealtimeLogs(user.uid);
+                } else {
+                    currentUser = null;
+                    if(logsUnsubscribe) logsUnsubscribe();
+                    authContainer.classList.remove('hidden');
+                    dashboardContainer.classList.add('hidden');
+                    userProfile.classList.add('hidden');
+                    apiConfigContainer.classList.add('hidden');
+                }
+            });
+        }
+
+        // Toggle Sign-In / Sign-Up Presentation
+        toggleAuthMode.addEventListener('click', (e) => {
+            e.preventDefault();
+            isSignUpMode = !isSignUpMode;
+            authTitle.textContent = isSignUpMode ? "Create Account" : "Welcome to Living Fitness";
             authSubmitBtn.textContent = isSignUpMode ? "Sign Up" : "Sign In";
             toggleAuthMode.textContent = isSignUpMode ? "Already have an account? Sign In" : "Don't have an account? Sign Up";
         });
@@ -294,50 +368,24 @@
                 return;
             }
 
-            if (!auth) {
-                alert("Running in sandbox mode! Simulating successful authentication setup.");
-                simulateLocalUser(email);
-                return;
-            }
-
             try {
                 if (isSignUpMode) {
-                    console.log("Attempting to Sign Up user:", email);
-                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                    alert("Account created successfully! Logging you in...");
+                    await createUserWithEmailAndPassword(auth, email, password);
+                    alert("Account created successfully!");
                 } else {
-                    console.log("Attempting to Sign In user:", email);
                     await signInWithEmailAndPassword(auth, email, password);
                 }
             } catch (error) {
-                console.error("Firebase Auth Error Details:", error);
-                // Directly alerts the exact backend blocker to your mobile screen
-                alert("🔒 Auth Error: " + error.code + " - " + error.message);
+                alert("🔒 Auth Error:\nCode: " + error.code + "\nMessage: " + error.message);
             }
         });
-
 
         logoutBtn.addEventListener('click', () => {
-            if(auth) {
-                signOut(auth);
-            } else {
-                location.reload();
-            }
+            if(auth) signOut(auth);
         });
 
-        // Sandbox execution fallback logic
-        function simulateLocalUser(email) {
-            currentUser = { uid: "sandbox_user_123", email: email };
-            userDisplayEmail.textContent = email;
-            authContainer.classList.add('hidden');
-            dashboardContainer.classList.remove('hidden');
-            userProfile.classList.remove('hidden');
-            apiConfigContainer.classList.remove('hidden');
-            setupRealtimeLogs(currentUser.uid);
-        }
-
         // ==========================================
-        // 3. REQ: CLOUD DATABASE (FIRESTORE) STORAGE
+        // 3. CLOUD DATABASE (FIRESTORE) STORAGE
         // ==========================================
         const historyLogsContainer = document.getElementById('historyLogsContainer');
         const statCalories = document.getElementById('statCalories');
@@ -345,5 +393,262 @@
         const progressBar = document.getElementById('progressBar');
         const progressPct = document.getElementById('progressPct');
 
-        // Fetching logs in realtime
-        function setu
+        function setupRealtimeLogs(userId) {
+            if (!db) return;
+            const q = query(
+                collection(db, "fitness_logs"),
+                where("userId", "==", userId),
+                orderBy("timestamp", "desc")
+            );
+
+            logsUnsubscribe = onSnapshot(q, (snapshot) => {
+                const logs = [];
+                snapshot.forEach((doc) => {
+                    logs.push({ id: doc.id, ...doc.data() });
+                });
+                renderLogsAndStats(logs);
+            }, (error) => {
+                console.error("Firestore error:", error);
+            });
+        }
+
+        async function saveFitnessLog(type, description, value) {
+            const logData = {
+                userId: currentUser ? currentUser.uid : "unknown",
+                type: type,
+                description: description,
+                value: Number(value),
+                timestamp: new Date().getTime()
+            };
+
+            if (db && currentUser) {
+                try {
+                    await addDoc(collection(db, "fitness_logs"), logData);
+                } catch (e) {
+                    alert("Error saving entry: " + e.message);
+                }
+            }
+        }
+
+        function renderLogsAndStats(logs) {
+            if(logs.length === 0) {
+                historyLogsContainer.innerHTML = `<p class="text-slate-400 text-sm text-center py-6">No workouts or meals logged yet today.</p>`;
+                statCalories.textContent = "0";
+                statWorkouts.textContent = "0";
+                progressBar.style.width = "0%";
+                progressPct.textContent = "0%";
+                return;
+            }
+
+            let totalCalories = 0;
+            let totalWorkouts = 0;
+            let html = "";
+
+            logs.forEach(log => {
+                const isMeal = log.type === 'Meal';
+                if(isMeal) totalCalories += log.value;
+                else totalWorkouts++;
+
+                const icon = isMeal ? 'fa-utensils text-amber-500 bg-amber-50' : 'fa-dumbbell text-emerald-500 bg-emerald-50';
+                const valueText = isMeal ? `+${log.value} kcal` : `${log.value} min`;
+
+                html += `
+                    <div class="flex items-center justify-between p-3 border border-slate-100 rounded-xl hover:bg-slate-50 transition">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg flex items-center justify-center text-sm ${icon}"></div>
+                            <div>
+                                <p class="text-sm font-semibold text-slate-800">${log.description}</p>
+                                <p class="text-xs text-slate-400">${new Date(log.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
+                            </div>
+                        </div>
+                        <span class="text-sm font-bold text-slate-700">${valueText}</span>
+                    </div>
+                `;
+            });
+
+            historyLogsContainer.innerHTML = html;
+            statCalories.textContent = totalCalories;
+            statWorkouts.textContent = totalWorkouts;
+
+            const targetScore = ((totalCalories / 2000) * 50) + ((totalWorkouts / 2) * 50);
+            const cappedScore = Math.min(Math.round(targetScore), 100);
+            progressBar.style.width = `${cappedScore}%`;
+            progressPct.textContent = `${cappedScore}%`;
+        }
+
+        const manualLogFormCard = document.getElementById('manualLogFormCard');
+        const addLogModalBtn = document.getElementById('addLogModalBtn');
+        const closeLogCardBtn = document.getElementById('closeLogCardBtn');
+        const manualLogForm = document.getElementById('manualLogForm');
+        const logType = document.getElementById('logType');
+        const valueLabel = document.getElementById('valueLabel');
+        const logValue = document.getElementById('logValue');
+
+        addLogModalBtn.addEventListener('click', () => manualLogFormCard.classList.remove('hidden'));
+        closeLogCardBtn.addEventListener('click', () => manualLogFormCard.classList.add('hidden'));
+        
+        logType.addEventListener('change', () => {
+            if(logType.value === 'Meal') {
+                valueLabel.textContent = "Estimated Calories";
+                logValue.placeholder = "e.g., 450";
+            } else {
+                valueLabel.textContent = "Duration (Minutes)";
+                logValue.placeholder = "e.g., 45";
+            }
+        });
+
+        manualLogForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await saveFitnessLog(logType.value, document.getElementById('logDesc').value, logValue.value);
+            manualLogForm.reset();
+            manualLogFormCard.classList.add('hidden');
+        });
+
+        // ==========================================
+        // 4. REAL AI COACH (OPENAI API INTEGRATION)
+        // ==========================================
+        const chatForm = document.getElementById('chatForm');
+        const chatInput = document.getElementById('chatInput');
+        const chatMessages = document.getElementById('chatMessages');
+        const clearChatBtn = document.getElementById('clearChatBtn');
+        const saveKeyBtn = document.getElementById('saveKeyBtn');
+        const openaiApiKeyInput = document.getElementById('openaiApiKey');
+
+        let apiKey = localStorage.getItem('lf_openai_key') || "";
+        if(apiKey) {
+            openaiApiKeyInput.value = apiKey;
+            apiConfigContainer.classList.add('opacity-60');
+        }
+
+        saveKeyBtn.addEventListener('click', () => {
+            const key = openaiApiKeyInput.value.trim();
+            if(key.startsWith('sk-')) {
+                localStorage.setItem('lf_openai_key', key);
+                apiKey = key;
+                alert("API Key saved securely!");
+                apiConfigContainer.classList.add('opacity-60');
+            } else {
+                alert("Invalid configuration template. Key must start with 'sk-'.");
+            }
+        });
+
+        clearChatBtn.addEventListener('click', () => {
+            chatMessages.innerHTML = `
+                <div class="flex gap-3 max-w-[85%]">
+                    <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center flex-shrink-0 text-slate-600"><i class="fa-solid fa-robot"></i></div>
+                    <div class="bg-slate-100 text-slate-800 p-3 rounded-2xl rounded-tl-none leading-relaxed">
+                        Chat memory wiped cleanly. How can your <strong>Living Fitness Coach</strong> guide you now?
+                    </div>
+                </div>
+            `;
+        });
+
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const userMessageText = chatInput.value.trim();
+            if(!userMessageText) return;
+
+            appendMessage(userMessageText, true);
+            chatInput.value = "";
+
+            if(!apiKey) {
+                appendMessage("System notice: Please provide an OpenAI API key in the configuration card above.", false);
+                return;
+            }
+
+            const thinkingId = appendThinkingIndicator();
+
+            try {
+                const response = await fetch("https://api.openai.com/v1/chat/completions", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: "gpt-4o-mini",
+                        messages: [
+                            {
+                                role: "system",
+                                content: `You are the highly motivating and expert 'Living Fitness AI Coach'. You provide quick, clear athletic training guidance and precise actionable meal metrics. 
+                                CRITICAL FEATURE: If a user specifies logging activity or food intake, you MUST conclude your exact paragraph answer block with an explicit structured syntax processing command payload matching structural lines:
+                                [COMMAND:LOG:Meal:Description Here:CalorieNumericValue] or [COMMAND:LOG:Workout:Description Here:MinuteDurationValue].`
+                            },
+                            { role: "user", content: userMessageText }
+                        ],
+                        temperature: 0.7
+                    })
+                });
+
+                const data = await response.json();
+                document.getElementById(thinkingId).remove();
+
+                if(data.choices && data.choices[0]) {
+                    let coachReply = data.choices[0].message.content;
+                    coachReply = checkAndExecuteAiCommands(coachReply);
+                    appendMessage(coachReply, false);
+                } else {
+                    appendMessage("Error parsing feedback from OpenAI. Verify your billing and usage limits.", false);
+                }
+
+            } catch (err) {
+                console.error(err);
+                document.getElementById(thinkingId).remove();
+                appendMessage("Network connection interrupted handling remote API response.", false);
+            }
+        });
+
+        function appendMessage(text, isUser) {
+            const msgRow = document.createElement('div');
+            msgRow.className = `flex gap-3 max-w-[85%] ${isUser ? 'ml-auto flex-row-reverse' : ''}`;
+            
+            const iconClass = isUser ? 'fa-user text-emerald-600 bg-emerald-50' : 'fa-robot text-slate-600 bg-slate-100';
+            const textBg = isUser ? 'bg-emerald-500 text-white rounded-tr-none' : 'bg-slate-100 text-slate-800 rounded-tl-none';
+
+            msgRow.innerHTML = `
+                <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-xs ${iconClass}">
+                    <i class="fa-solid ${iconClass.split(' ')[0]}"></i>
+                </div>
+                <div class="${textBg} p-3 rounded-2xl leading-relaxed whitespace-pre-line">
+                    ${text}
+                </div>
+            `;
+            chatMessages.appendChild(msgRow);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function appendThinkingIndicator() {
+            const id = 'thinking_' + Date.now();
+            const msgRow = document.createElement('div');
+            msgRow.id = id;
+            msgRow.className = "flex gap-3 max-w-[85%]";
+            msgRow.innerHTML = `
+                <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center flex-shrink-0 text-xs text-slate-600">
+                    <i class="fa-solid fa-robot"></i>
+                </div>
+                <div class="bg-slate-100 text-slate-400 p-3 rounded-2xl rounded-tl-none flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce"></span>
+                    <span class="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce [animation-delay:0.2s]"></span>
+                    <span class="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce [animation-delay:0.4s]"></span>
+                </div>
+            `;
+            chatMessages.appendChild(msgRow);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            return id;
+        }
+
+        function checkAndExecuteAiCommands(text) {
+            const commandRegex = /\[COMMAND:LOG:(Meal|Workout):([^:]+):(\d+)\]/;
+            const match = text.match(commandRegex);
+            
+            if(match) {
+                const type = match[1];
+                const desc = match[2];
+                const value = match[3];
+                saveFitnessLog(type, desc, value);
+                text = text.replace(commandRegex, `\n\n⚡ *[Automated System: Successfully logged this entry to your ${type} history]*`);
+            }
+            return text;
+        }
+    </script>
+
