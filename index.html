@@ -48,6 +48,13 @@
                 </div>
                 <button type="submit" id="authSubmitBtn" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-medium py-3 rounded-xl shadow-lg transition mt-2">Sign In</button>
             </form>
+                        </form>
+            <div class="mt-4">
+                <button id="bypassAuthBtn" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-medium py-2 rounded-xl transition text-sm">
+                    ⚡ Fast Track: Skip Login to Dashboard
+                </button>
+            </div>
+
             <div class="text-center mt-6">
                 <button id="toggleAuthMode" class="text-sm text-emerald-600 hover:underline">Don't have an account? Sign Up</button>
             </div>
@@ -397,6 +404,19 @@
             d.className = `p-3 rounded-2xl max-w-[85%] text-sm leading-relaxed whitespace-pre-line ${u ? 'bg-emerald-500 text-white ml-auto rounded-tr-none' : 'bg-slate-100 text-slate-800 rounded-tl-none'}`;
             d.innerText = t; chatMessages.appendChild(d); chatMessages.scrollTop = chatMessages.scrollHeight;
         }
-    </script>
+    </script>       // Bypass Logic: Instantly show dashboard without needing Firebase Auth login
+        document.getElementById('bypassAuthBtn').addEventListener('click', () => {
+            currentUser = { uid: "local_user", email: "guest@livingfitness.com" };
+            userDisplayEmail.textContent = currentUser.email;
+            authContainer.classList.add('hidden');
+            dashboardContainer.classList.remove('hidden');
+            userProfile.classList.remove('hidden');
+            if (!localStorage.getItem('lf_gemini_key')) {
+                apiConfigContainer.classList.remove('hidden');
+            }
+            // Load a local mock log system since Firebase Auth is bypassed
+            renderLogsAndStats([]);
+        });
+    
 </body>
 </html>
