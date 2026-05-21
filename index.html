@@ -281,11 +281,20 @@
         // Form Submit Handler for Auth Actions
         authForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const email = authEmail.value;
-            const password = authPassword.value;
+            const email = authEmail.value.trim();
+            const password = authPassword.value.trim();
 
-            if(!auth) {
-                // Local Sandbox bypass if Firebase configuration is not updated
+            if (!email || !password) {
+                alert("Please fill in both email and password fields.");
+                return;
+            }
+
+            if (password.length < 6) {
+                alert("Firebase requires passwords to be at least 6 characters long.");
+                return;
+            }
+
+            if (!auth) {
                 alert("Running in sandbox mode! Simulating successful authentication setup.");
                 simulateLocalUser(email);
                 return;
@@ -293,14 +302,20 @@
 
             try {
                 if (isSignUpMode) {
-                    await createUserWithEmailAndPassword(auth, email, password);
+                    console.log("Attempting to Sign Up user:", email);
+                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                    alert("Account created successfully! Logging you in...");
                 } else {
+                    console.log("Attempting to Sign In user:", email);
                     await signInWithEmailAndPassword(auth, email, password);
                 }
             } catch (error) {
-                alert(error.message);
+                console.error("Firebase Auth Error Details:", error);
+                // Directly alerts the exact backend blocker to your mobile screen
+                alert("🔒 Auth Error: " + error.code + " - " + error.message);
             }
         });
+
 
         logoutBtn.addEventListener('click', () => {
             if(auth) {
