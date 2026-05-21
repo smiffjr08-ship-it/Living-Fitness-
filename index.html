@@ -311,7 +311,11 @@
         document.getElementById('saveKeyBtn').addEventListener('click', () => {
             const key = document.getElementById('openaiApiKey').value.trim();
             if(key.startsWith('sk-')) {
-                localStorage.setItem('lf_openai_key', key); apiKey = key; alert("Saved!");
+                localStorage.setItem('lf_openai_key', key); 
+                apiKey = key; 
+                alert("Saved!");
+                // This line will hide the orange configuration box automatically upon saving
+                document.getElementById('apiConfigContainer').classList.add('hidden');
             } else alert("Invalid key format.");
         });
 
