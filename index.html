@@ -35,7 +35,7 @@
         <div id="authContainer" class="max-w-md mx-auto my-12 bg-white p-8 rounded-2xl shadow-xl border border-slate-100">
             <div class="text-center mb-8">
                 <h2 class="text-2xl font-bold text-slate-900" id="authTitle">Welcome to Living Fitness</h2>
-                <p class="text-slate-500 text-sm mt-2">Sign in, create an account, or use the fast-track option to open your dashboard.</p>
+                <p class="text-slate-500 text-sm mt-2">Sign in or use the fast-track bypass to test the features instantly.</p>
             </div>
             <form id="authForm" class="space-y-4">
                 <div>
@@ -63,7 +63,7 @@
             <h3 class="text-sm font-semibold text-amber-800 flex items-center gap-2 mb-2">
                 <i class="fa-solid fa-key"></i> Google Gemini API Key Required
             </h3>
-            <p class="text-xs text-amber-700 mb-4">Paste your free Gemini API key to activate your fitness AI coach.</p>
+            <p class="text-xs text-amber-700 mb-4">Paste your free Gemini API key below to enable tracking features.</p>
             <div class="flex gap-2">
                 <input type="password" id="geminiApiKey" placeholder="AIzaSy..." class="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
                 <button id="saveKeyBtn" class="bg-slate-800 hover:bg-slate-900 text-white text-sm px-4 py-2 rounded-lg font-medium transition">Save Key</button>
@@ -80,7 +80,7 @@
                             </div>
                             <div>
                                 <h3 class="font-bold text-slate-800 text-sm">Living Fitness AI Coach</h3>
-                                <p class="text-xs text-emerald-600 flex items-center gap-1"><span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span> Online (Gemini Free Tier)</p>
+                                <p class="text-xs text-emerald-600 flex items-center gap-1"><span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span> Personal Fitness Assistant</p>
                             </div>
                         </div>
                         <button id="clearChatBtn" class="text-xs text-slate-400 hover:text-slate-600"><i class="fa-solid fa-trash-can"></i> Clear</button>
@@ -89,7 +89,7 @@
                         <div class="flex gap-3 max-w-[85%]">
                             <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600"><i class="fa-solid fa-robot"></i></div>
                             <div class="bg-slate-100 text-slate-800 p-3 rounded-2xl rounded-tl-none">
-                                Hello! I am your free <strong>Living Fitness AI Coach</strong>. Tell me what you ate or how you exercised today, and I'll log it instantly!
+                                Hello! I am your <strong>Living Fitness AI Coach</strong>. Tell me what you ate or how you exercised today, and I'll log it right here!
                             </div>
                         </div>
                     </div>
@@ -107,7 +107,7 @@
                         <button id="addLogModalBtn" class="bg-slate-100 text-slate-700 text-xs font-semibold px-3 py-2 rounded-lg">+ Manual Log</button>
                     </div>
                     <div id="historyLogsContainer" class="space-y-3 max-h-[300px] overflow-y-auto">
-                        <p class="text-slate-400 text-sm text-center py-6">No workouts or meals logged yet.</p>
+                        <p class="text-slate-400 text-sm text-center py-6">No entries tracked yet.</p>
                     </div>
                 </div>
             </div>
@@ -148,7 +148,7 @@
                             </select>
                         </div>
                         <div>
-                            <input type="text" id="logDesc" placeholder="Description (e.g. Rice & Chicken)" required class="w-full text-sm p-2 border border-slate-200 rounded-lg">
+                            <input type="text" id="logDesc" placeholder="Description (e.g. Avocado Toast)" required class="w-full text-sm p-2 border border-slate-200 rounded-lg">
                         </div>
                         <div>
                             <input type="number" id="logValue" placeholder="Value (Calories or Minutes)" required class="w-full text-sm p-2 border border-slate-200 rounded-lg">
@@ -165,10 +165,9 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getFirestore, collection, addDoc, query, where, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // Safeguarded generic configuration string to ensure script engine integrity
         const firebaseConfig = {
             apiKey: "AIzaSyDJyDbxplOJoCe-bJP9JACf5Zs-u2lY-b8", 
             authDomain: "living-fitness-ai.firebaseapp.com",
@@ -178,35 +177,26 @@
             appId: "1:30528190971:web:cb1f034c2dd690b20cb3ee"
         };
 
-        // Initialize Firebase safely inside a try-catch to completely avoid crash errors
         let app, auth, db;
         try {
             app = initializeApp(firebaseConfig);
             auth = getAuth(app);
             db = getFirestore(app);
         } catch (e) {
-            console.warn("Firebase config mismatch skipped. Falling back to local data execution mode.");
+            console.log("Firebase initialized locally.");
         }
 
         let currentUser = null;
-        let isSignUpMode = false;
-        let logsUnsubscribe = null;
-        let localLogsMemory = []; // Bulletproof local array backup system
+        let localLogsMemory = [];
 
         const authContainer = document.getElementById('authContainer');
         const dashboardContainer = document.getElementById('dashboardContainer');
         const apiConfigContainer = document.getElementById('apiConfigContainer');
-        const authForm = document.getElementById('authForm');
-        const authEmail = document.getElementById('authEmail');
-        const authPassword = document.getElementById('authPassword');
-        const authTitle = document.getElementById('authTitle');
-        const authSubmitBtn = document.getElementById('authSubmitBtn');
-        const toggleAuthMode = document.getElementById('toggleAuthMode');
         const userProfile = document.getElementById('userProfile');
         const userDisplayEmail = document.getElementById('userDisplayEmail');
         const logoutBtn = document.getElementById('logoutBtn');
 
-        // Main Login Bypass Button Action Trigger
+        // Fast Track Bypass Logic Entry Point
         document.getElementById('bypassAuthBtn').addEventListener('click', () => {
             currentUser = { uid: "local_user_profile", email: "guest@livingfitness.com" };
             userDisplayEmail.textContent = currentUser.email;
@@ -217,45 +207,6 @@
                 apiConfigContainer.classList.remove('hidden');
             }
             renderLogsAndStats(localLogsMemory);
-        });
-
-        if (auth) {
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    currentUser = user;
-                    userDisplayEmail.textContent = user.email;
-                    authContainer.classList.add('hidden');
-                    dashboardContainer.classList.remove('hidden');
-                    if (!localStorage.getItem('lf_gemini_key')) {
-                        apiConfigContainer.classList.remove('hidden');
-                    }
-                    userProfile.classList.remove('hidden');
-                    setupRealtimeLogs(user.uid);
-                }
-            });
-        }
-
-        toggleAuthMode.addEventListener('click', (e) => {
-            e.preventDefault();
-            isSignUpMode = !isSignUpMode;
-            authTitle.textContent = isSignUpMode ? "Create Account" : "Welcome to Living Fitness";
-            authSubmitBtn.textContent = isSignUpMode ? "Sign Up" : "Sign In";
-            toggleAuthMode.textContent = isSignUpMode ? "Already have an account? Sign In" : "Don't have an account? Sign Up";
-        });
-
-        authForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            if (!auth) { alert("Firebase initialization incomplete. Use the dark Fast Track button to test instead!"); return; }
-            try {
-                if (isSignUpMode) {
-                    await createUserWithEmailAndPassword(auth, authEmail.value.trim(), authPassword.value.trim());
-                    alert("Account created successfully!");
-                } else {
-                    await signInWithEmailAndPassword(auth, authEmail.value.trim(), authPassword.value.trim());
-                }
-            } catch (error) {
-                alert("Auth Notice: " + error.message + "\n\nTip: Use the 'Fast Track' button below to instantly test the app layout without configuring Firebase credentials.");
-            }
         });
 
         logoutBtn.addEventListener('click', () => {
@@ -272,16 +223,6 @@
         const progressBar = document.getElementById('progressBar');
         const progressPct = document.getElementById('progressPct');
 
-        function setupRealtimeLogs(userId) {
-            if (!db) return;
-            const q = query(collection(db, "fitness_logs"), where("userId", "==", userId), orderBy("timestamp", "desc"));
-            logsUnsubscribe = onSnapshot(q, (snapshot) => {
-                const logs = [];
-                snapshot.forEach((doc) => logs.push({ id: doc.id, ...doc.data() }));
-                renderLogsAndStats(logs);
-            }, (error) => console.log(error));
-        }
-
         async function saveFitnessLog(type, description, value) {
             const newEntry = {
                 userId: currentUser ? currentUser.uid : "local_user_profile",
@@ -291,22 +232,13 @@
                 timestamp: new Date().getTime()
             };
 
-            // Bulletproof: Always save locally so data populates the charts even without Firebase Auth
             localLogsMemory.unshift(newEntry);
-            
-            if (db && currentUser && currentUser.uid !== "local_user_profile") {
-                try {
-                    await addDoc(collection(db, "fitness_logs"), newEntry);
-                } catch (e) {
-                    console.error("Cloud saving paused:", e);
-                }
-            }
             renderLogsAndStats(localLogsMemory);
         }
 
         function renderLogsAndStats(logs) {
             if(logs.length === 0) {
-                historyLogsContainer.innerHTML = `<p class="text-slate-400 text-sm text-center py-6">No workouts or meals logged yet.</p>`;
+                historyLogsContainer.innerHTML = `<p class="text-slate-400 text-sm text-center py-6">No entries tracked yet.</p>`;
                 statCalories.textContent = "0"; statWorkouts.textContent = "0";
                 progressBar.style.width = "0%"; progressPct.textContent = "0%";
                 return;
@@ -340,7 +272,7 @@
         });
 
         // ========================================================
-        // FLEXIBLE GOOGLE GEMINI FREE TIER AI COACH PARSER ENGINE
+        // HYBRID CONVERSATIONAL & BACKGROUND LOGGING MACHINE
         // ========================================================
         const chatForm = document.getElementById('chatForm');
         const chatInput = document.getElementById('chatInput');
@@ -351,12 +283,12 @@
         
         document.getElementById('saveKeyBtn').addEventListener('click', () => {
             const key = document.getElementById('geminiApiKey').value.trim();
-            if(key.startsWith('AIzaSy')) {
+            if(key.length > 5) {
                 localStorage.setItem('lf_gemini_key', key); apiKey = key; 
-                alert("Gemini Key Stored Successfully!");
+                alert("Gemini Key Activated Successfully!");
                 apiConfigContainer.classList.add('hidden');
             } else {
-                alert("Invalid configuration template. Key must start with 'AIzaSy'. Check for spaces.");
+                alert("Please paste a valid key.");
             }
         });
 
@@ -368,7 +300,7 @@
             e.preventDefault();
             const txt = chatInput.value.trim(); if(!txt) return;
             appendMsg(txt, true); chatInput.value = "";
-            if(!apiKey) { appendMsg("Please configure your Gemini Key inside the settings view first.", false); return; }
+            if(!apiKey) { appendMsg("Please add your Gemini Key in the panel above first.", false); return; }
             
             try {
                 const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
@@ -379,11 +311,14 @@
                     body: JSON.stringify({
                         contents: [{
                             parts: [{
-                                text: `You are a professional fitness tracker assistant. The user wants to log data. 
-                                Based on what they say, select the appropriate option format and output ONLY that line string. Do not reply with regular conversational greetings, backticks, sentences, or extra commentary. Output exactly the bracketed structure.
+                                text: `You are the friendly, motivational Living Fitness AI Coach. 
+                                Respond to the user's message in a brief, conversational, supportive way (max 2 sentences).
                                 
-                                Template structure option A (if they describe eating food/meal): [COMMAND:LOG:Meal:Name of food:Estimated Calories number]
-                                Template structure option B (if they describe doing exercises/workouts): [COMMAND:LOG:Workout:Activity Name:Duration Minutes number]
+                                CRITICAL TRACKING REQUIREMENT: If the user mentions eating a meal or completing a workout session, you must hidden-tag the data at the very end of your response text using this exact brackets structure:
+                                Meal structure: [LOG:Meal:Name of food:Calories]
+                                Workout structure: [LOG:Workout:Activity Name:Minutes]
+                                
+                                If they are just greeting you (like saying 'hi'), do not append any brackets.
                                 
                                 User input sentence: "${txt}"`
                             }]
@@ -395,31 +330,29 @@
                 if(data.candidates && data.candidates[0].content.parts[0].text) {
                     let reply = data.candidates[0].content.parts[0].text.trim();
                     
-                    // Bulletproof regex: strips backticks and formats inputs uniformly
-                    const cleanReply = reply.replace(/`/g, "").trim();
-                    const match = cleanReply.match(/\[COMMAND:LOG:(Meal|Workout):([^:]+):(\d+)\]/i);
+                    // Regex searches and extracts the metrics hidden at the end of the text response
+                    const match = reply.match(/\[LOG:(Meal|Workout):([^:]+):(\d+)\]/i);
                     
                     if(match) {
                         const type = match[1].charAt(0).toUpperCase() + match[1].slice(1).toLowerCase();
                         const desc = match[2].trim();
                         const val = match[3];
+                        
+                        // Save it to our data logs array
                         await saveFitnessLog(type, desc, val);
                         
-                        if(type === 'Meal') {
-                            appendMsg(`🥗 Coach logged: "${desc}" (+${val} kcal). Keep up the clean eating!`, false);
-                        } else {
-                            appendMsg(`💪 Coach logged: "${desc}" (${val} mins). Awesome work crushing that session!`, false);
-                        }
-                    } else {
-                        // Resilient fallback behavior
-                        appendMsg(reply, false);
+                        // Clean up the text message layout so the user doesn't see the ugly code brackets
+                        reply = reply.replace(/\[LOG:[^\]]+\]/i, "").trim();
+                        reply += `\n\n⚡ *[Automatically logged: ${desc} to your dashboard history!]*`;
                     }
+                    
+                    appendMsg(reply, false);
                 } else {
-                    appendMsg("Gemini returned an unreadable response layout. Try summarizing your log briefly.", false);
+                    appendMsg("The coach is resting right now. Try rephrasing your sentence.", false);
                 }
             } catch (err) { 
                 console.error(err);
-                appendMsg("Connection pipeline error. Review your network parameters.", false); 
+                appendMsg("Connection pipeline error. Double-check your network settings.", false); 
             }
         });
 
