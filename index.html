@@ -334,7 +334,7 @@
             chatMessages.innerHTML = `<div class="p-3 rounded-2xl max-w-[85%] bg-slate-100 text-slate-800">Logs cleared. What goals are we hitting next?</div>`;
         });
 
-        chatForm.addEventListener('submit', async (e) => {
+                chatForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const txt = chatInput.value.trim(); if(!txt) return;
             appendMsg(txt, true); chatInput.value = "";
@@ -349,11 +349,13 @@
                     body: JSON.stringify({
                         contents: [{
                             parts: [{
-                                text: `You are the expert athletic Living Fitness AI Coach. Give a friendly, highly motivating, ultra-concise answer.
-                                CRITICAL: If the user says they ate food or completed an exercise, you MUST generate a system command string at the absolute end of your response text.
-                                Structural template syntax: [COMMAND:LOG:Meal:ExactItemName:CaloriesNumber] or [COMMAND:LOG:Workout:ActivityName:MinutesNumber].
+                                text: `You are a helpful fitness tracker assistant. The user wants to log something. 
+                                Based on what the user said, choose the best matching option below and output ONLY that line. Do not say anything else. No polite intro, no extra text.
                                 
-                                User sentence: ${txt}`
+                                Option A (if it's a meal): [COMMAND:LOG:Meal:Item Name:Estimated Calories]
+                                Option B (if it's an exercise): [COMMAND:LOG:Workout:Exercise Name:Minutes]
+                                
+                                User input: "${txt}"`
                             }]
                         }]
                     })
@@ -361,23 +363,35 @@
                 
                 const data = await res.json();
                 if(data.candidates && data.candidates[0].content.parts[0].text) {
-                    let reply = data.candidates[0].content.parts[0].text;
+                    let reply = data.candidates[0].content.parts[0].text.trim();
                     
-                    // Regex capture parsing engine matches structural line log updates
+                    // Match the command regardless of markdown styling
                     const match = reply.match(/\[COMMAND:LOG:(Meal|Workout):([^:]+):(\d+)\]/);
                     if(match) {
-                        await saveFitnessLog(match[1], match[2], match[3]);
-                        reply = reply.replace(/\[COMMAND:LOG:[^\]]+\]/, "\n\n⚡ *[Logged automatically to history database]*");
+                        const type = match[1];
+                        const desc = match[2];
+                        const val = match[3];
+                        await saveFitnessLog(type, desc, val);
+                        
+                        // Give a beautifully clean presentation response back to your screen
+                        if(type === 'Meal') {
+                            appendMsg(`🥗 Coach logged: "${desc}" (+${val} kcal). Keep up the clean eating!`, false);
+                        } else {
+                            appendMsg(`💪 Coach logged: "${desc}" (${val} mins). Awesome work crushing that session!`, false);
+                        }
+                    } else {
+                        // Safe fallback if it just wants to talk normal fitness advice
+                        appendMsg(reply, false);
                     }
-                    appendMsg(reply, false);
                 } else {
-                    appendMsg("Notice: The AI could not verify the contents configuration. Ensure data structures remain unmodified.", false);
+                    appendMsg("Gemini could not read the prompt response. Try adjusting the sentence structure slightly.", false);
                 }
             } catch (err) { 
                 console.error(err);
                 appendMsg("Connection pipeline error. Review web dashboard parameters.", false); 
             }
         });
+
 
         function appendMsg(t, u) {
             const d = document.createElement('div');
