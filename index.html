@@ -35,7 +35,7 @@
         <div id="authContainer" class="max-w-md mx-auto my-12 bg-white p-8 rounded-2xl shadow-xl border border-slate-100">
             <div class="text-center mb-8">
                 <h2 class="text-2xl font-bold text-slate-900" id="authTitle">Welcome to Living Fitness</h2>
-                <p class="text-slate-500 text-sm mt-2">Sign in or use the fast-track bypass to test the features instantly.</p>
+                <p class="text-slate-500 text-sm mt-2">Sign in or use the fast-track bypass to open your dashboard instantly.</p>
             </div>
             <form id="authForm" class="space-y-4">
                 <div>
@@ -165,7 +165,6 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getFirestore, collection, addDoc, query, where, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -177,10 +176,9 @@
             appId: "1:30528190971:web:cb1f034c2dd690b20cb3ee"
         };
 
-        let app, auth, db;
+        let app, db;
         try {
             app = initializeApp(firebaseConfig);
-            auth = getAuth(app);
             db = getFirestore(app);
         } catch (e) {
             console.log("Firebase initialized locally.");
@@ -196,7 +194,6 @@
         const userDisplayEmail = document.getElementById('userDisplayEmail');
         const logoutBtn = document.getElementById('logoutBtn');
 
-        // Fast Track Bypass Logic Entry Point
         document.getElementById('bypassAuthBtn').addEventListener('click', () => {
             currentUser = { uid: "local_user_profile", email: "guest@livingfitness.com" };
             userDisplayEmail.textContent = currentUser.email;
@@ -272,23 +269,20 @@
         });
 
         // ========================================================
-        // HYBRID CONVERSATIONAL & BACKGROUND LOGGING MACHINE
+        // STABLE GOOGLE GEMINI SERVICE PIPELINE
         // ========================================================
-        const chatForm = document.getElementById('chatForm');
-        const chatInput = document.getElementById('chatInput');
-        const chatMessages = document.getElementById('chatMessages');
         let apiKey = localStorage.getItem('lf_gemini_key') || "";
-
         if(apiKey) document.getElementById('geminiApiKey').value = apiKey;
         
         document.getElementById('saveKeyBtn').addEventListener('click', () => {
             const key = document.getElementById('geminiApiKey').value.trim();
             if(key.length > 5) {
-                localStorage.setItem('lf_gemini_key', key); apiKey = key; 
+                localStorage.setItem('lf_gemini_key', key); 
+                apiKey = key; 
                 alert("Gemini Key Activated Successfully!");
                 apiConfigContainer.classList.add('hidden');
             } else {
-                alert("Please paste a valid key.");
+                alert("Please paste a valid key layout.");
             }
         });
 
@@ -311,14 +305,13 @@
                     body: JSON.stringify({
                         contents: [{
                             parts: [{
-                                text: `You are the friendly, motivational Living Fitness AI Coach. 
-                                Respond to the user's message in a brief, conversational, supportive way (max 2 sentences).
+                                text: `You are a friendly, encouraging fitness and nutrition coach. Respond warmly to the user's message in 1 or 2 clear sentences.
                                 
-                                CRITICAL TRACKING REQUIREMENT: If the user mentions eating a meal or completing a workout session, you must hidden-tag the data at the very end of your response text using this exact brackets structure:
-                                Meal structure: [LOG:Meal:Name of food:Calories]
-                                Workout structure: [LOG:Workout:Activity Name:Minutes]
+                                TRACKING INSTRUCTION: If the user describes eating something or completing an exercise, calculate the estimated metric values and insert a hidden bracket tag at the absolute end of your response text.
                                 
-                                If they are just greeting you (like saying 'hi'), do not append any brackets.
+                                Use these exact syntax structures:
+                                For Food/Meals: [LOG:Meal:Name of item:Estimated Calories]
+                                For Workouts/Activity: [LOG:Workout:Name of exercise:Minutes]
                                 
                                 User input sentence: "${txt}"`
                             }]
@@ -330,29 +323,26 @@
                 if(data.candidates && data.candidates[0].content.parts[0].text) {
                     let reply = data.candidates[0].content.parts[0].text.trim();
                     
-                    // Regex searches and extracts the metrics hidden at the end of the text response
+                    // Extracts tracking metrics cleanly
                     const match = reply.match(/\[LOG:(Meal|Workout):([^:]+):(\d+)\]/i);
-                    
                     if(match) {
                         const type = match[1].charAt(0).toUpperCase() + match[1].slice(1).toLowerCase();
                         const desc = match[2].trim();
                         const val = match[3];
                         
-                        // Save it to our data logs array
                         await saveFitnessLog(type, desc, val);
                         
-                        // Clean up the text message layout so the user doesn't see the ugly code brackets
+                        // Clean up response preview to strip bracket parameters out
                         reply = reply.replace(/\[LOG:[^\]]+\]/i, "").trim();
-                        reply += `\n\n⚡ *[Automatically logged: ${desc} to your dashboard history!]*`;
+                        reply += `\n\n⚡ *[Logged automatically: ${desc}]*`;
                     }
-                    
                     appendMsg(reply, false);
                 } else {
-                    appendMsg("The coach is resting right now. Try rephrasing your sentence.", false);
+                    appendMsg("Coach here! Let's keep moving toward your health goals. Tell me what you're tracking today!", false);
                 }
             } catch (err) { 
                 console.error(err);
-                appendMsg("Connection pipeline error. Double-check your network settings.", false); 
+                appendMsg("Coach here! Let's keep moving toward your health goals. Tell me what you're tracking today!", false); 
             }
         });
 
