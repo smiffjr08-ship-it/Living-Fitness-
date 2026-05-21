@@ -4,20 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Living Fitness App - AI Coach</title>
-    <!-- Tailwind CSS for a Clean Pro UI -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome for Dashboard Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body class="bg-slate-50 font-sans text-slate-800">
 
-    <!-- NAVIGATION BAR -->
     <nav class="bg-white border-b border-slate-200 fixed w-full z-30 top-0 left-0">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
                     <div class="flex-shrink-0 flex items-center gap-2">
-                        <div class="bg-emerald-500 text-white p-2 rounded-xl shadow-md shadow-emerald-200">
+                        <div class="bg-emerald-500 text-white p-2 rounded-xl shadow-md">
                             <i class="fa-solid fa-heart-pulse text-xl"></i>
                         </div>
                         <span class="text-xl font-bold tracking-tight bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent">Living Fitness</span>
@@ -33,11 +30,9 @@
         </div>
     </nav>
 
-    <!-- MAIN APP CONTAINER -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12">
         
-        <!-- AUTH CONTAINER (Hidden after Login) -->
-        <div id="authContainer" class="max-w-md mx-auto my-12 bg-white p-8 rounded-2xl shadow-xl shadow-slate-100 border border-slate-100">
+        <div id="authContainer" class="max-w-md mx-auto my-12 bg-white p-8 rounded-2xl shadow-xl border border-slate-100">
             <div class="text-center mb-8">
                 <h2 class="text-2xl font-bold text-slate-900" id="authTitle">Welcome to Living Fitness</h2>
                 <p class="text-slate-500 text-sm mt-2">Sign in or create an account to unlock your AI Coach.</p>
@@ -45,243 +40,129 @@
             <form id="authForm" class="space-y-4">
                 <div>
                     <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Email Address</label>
-                    <input type="email" id="authEmail" required class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition">
+                    <input type="email" id="authEmail" required class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Password</label>
-                    <input type="password" id="authPassword" required class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition">
+                    <input type="password" id="authPassword" required class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500">
                 </div>
-                <button type="submit" id="authSubmitBtn" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-medium py-3 rounded-xl shadow-lg shadow-emerald-100 transition mt-2">Sign In</button>
+                <button type="submit" id="authSubmitBtn" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-medium py-3 rounded-xl shadow-lg transition mt-2">Sign In</button>
             </form>
             <div class="text-center mt-6">
                 <button id="toggleAuthMode" class="text-sm text-emerald-600 hover:underline">Don't have an account? Sign Up</button>
             </div>
         </div>
 
-        <!-- REQ: API CONFIG OVERLAY (To keep the app serverless/client-side for deployment) -->
         <div id="apiConfigContainer" class="hidden max-w-md mx-auto my-12 bg-white p-6 rounded-2xl shadow-xl border border-amber-100 bg-amber-50/30">
             <h3 class="text-sm font-semibold text-amber-800 flex items-center gap-2 mb-2">
                 <i class="fa-solid fa-key"></i> OpenAI API Key Required
             </h3>
-            <p class="text-xs text-amber-700 mb-4">Provide your API key to activate the live AI Coach. It is saved safely in your local browser storage.</p>
+            <p class="text-xs text-amber-700 mb-4">Provide your API key to activate the live AI Coach.</p>
             <div class="flex gap-2">
                 <input type="password" id="openaiApiKey" placeholder="sk-..." class="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
                 <button id="saveKeyBtn" class="bg-slate-800 hover:bg-slate-900 text-white text-sm px-4 py-2 rounded-lg font-medium transition">Save Key</button>
             </div>
         </div>
 
-        <!-- MAIN APP DASHBOARD (Hidden until Auth) -->
         <div id="dashboardContainer" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-8">
-            
-            <!-- LEFT 2 COLUMNS: AI COACH & HISTORY -->
             <div class="lg:col-span-2 space-y-8">
-                
-                <!-- REQ: Real AI Coach (OpenAI Chat Interface) -->
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col h-[550px]">
-                    <!-- Chat Header -->
                     <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50 rounded-t-2xl">
                         <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 bg-emerald-500 text-white rounded-full flex items-center justify-center shadow-inner">
+                            <div class="w-10 h-10 bg-emerald-500 text-white rounded-full flex items-center justify-center">
                                 <i class="fa-solid fa-robot"></i>
                             </div>
                             <div>
                                 <h3 class="font-bold text-slate-800 text-sm">Living Fitness AI Coach</h3>
-                                <p class="text-xs text-emerald-600 flex items-center gap-1"><span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span> Online & Ready</p>
+                                <p class="text-xs text-emerald-600 flex items-center gap-1"><span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span> Online</p>
                             </div>
                         </div>
-                        <button id="clearChatBtn" class="text-xs text-slate-400 hover:text-slate-600"><i class="fa-solid fa-trash-can"></i> Clear Chat</button>
+                        <button id="clearChatBtn" class="text-xs text-slate-400 hover:text-slate-600"><i class="fa-solid fa-trash-can"></i> Clear</button>
                     </div>
-                    
-                    <!-- Chat Messages Window -->
                     <div id="chatMessages" class="flex-1 p-4 overflow-y-auto space-y-4 text-sm">
                         <div class="flex gap-3 max-w-[85%]">
-                            <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center flex-shrink-0 text-slate-600"><i class="fa-solid fa-robot"></i></div>
-                            <div class="bg-slate-100 text-slate-800 p-3 rounded-2xl rounded-tl-none leading-relaxed">
-                                Hello! I am your <strong>Living Fitness AI Coach</strong>. Tell me your goals, or share what you ate or how you worked out today so I can log it for you!
+                            <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600"><i class="fa-solid fa-robot"></i></div>
+                            <div class="bg-slate-100 text-slate-800 p-3 rounded-2xl rounded-tl-none">
+                                Hello! I am your <strong>Living Fitness AI Coach</strong>. Share what you ate or how you worked out today!
                             </div>
                         </div>
                     </div>
-                    
-                    <!-- Chat Input -->
                     <form id="chatForm" class="p-4 border-t border-slate-100 flex gap-2 bg-white rounded-b-2xl">
-                        <input type="text" id="chatInput" placeholder="Ask about meal plans, workouts, or type 'Log 30 min run'..." required class="flex-1 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition text-sm">
-                        <button type="submit" class="bg-emerald-500 hover:bg-emerald-600 text-white px-5 rounded-xl shadow-md shadow-emerald-100 transition"><i class="fa-solid fa-paper-plane"></i></button>
+                        <input type="text" id="chatInput" placeholder="Type here..." required class="flex-1 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm">
+                        <button type="submit" class="bg-emerald-500 text-white px-5 rounded-xl"><i class="fa-solid fa-paper-plane"></i></button>
                     </form>
                 </div>
 
-                <!-- REQ: Workout + Meal History Saving View -->
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
                     <div class="flex justify-between items-center mb-6">
                         <h3 class="font-bold text-slate-900 text-lg flex items-center gap-2">
-                            <i class="fa-solid fa-calendar-check text-emerald-500"></i> Logged Workout & Meal History
+                            <i class="fa-solid fa-calendar-check text-emerald-500"></i> History Log
                         </h3>
-                        <div class="flex gap-2">
-                            <button id="addLogModalBtn" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold px-3 py-2 rounded-lg transition">+ Manual Log</button>
-                        </div>
+                        <button id="addLogModalBtn" class="bg-slate-100 text-slate-700 text-xs font-semibold px-3 py-2 rounded-lg">+ Manual Log</button>
                     </div>
-                    
-                    <!-- History List -->
-                    <div id="historyLogsContainer" class="space-y-3 max-h-[300px] overflow-y-auto pr-1">
-                        <p class="text-slate-400 text-sm text-center py-6">No workouts or meals logged yet today.</p>
+                    <div id="historyLogsContainer" class="space-y-3 max-h-[300px] overflow-y-auto">
+                        <p class="text-slate-400 text-sm text-center py-6">No workouts or meals logged yet.</p>
                     </div>
                 </div>
             </div>
 
-            <!-- RIGHT 1 COLUMN: METRICS & PROGRESS TRACKING -->
             <div class="space-y-8">
-                
-                <!-- REQ: Progress Tracking (Metrics Cards) -->
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-6">
                     <h3 class="font-bold text-slate-900 text-lg flex items-center gap-2">
-                        <i class="fa-solid fa-chart-line text-emerald-500"></i> Daily Progress Tracking
+                        <i class="fa-solid fa-chart-line text-emerald-500"></i> Progress Tracking
                     </h3>
-                    
-                    <!-- Progress Grid -->
                     <div class="grid grid-cols-2 gap-4">
-                        <div class="bg-emerald-50/50 p-4 rounded-xl border border-emerald-100/50">
-                            <span class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Calories In</span>
-                            <div class="flex items-baseline gap-1">
-                                <span id="statCalories" class="text-2xl font-bold text-slate-900">0</span>
-                                <span class="text-xs text-slate-400 font-medium">kcal</span>
-                            </div>
+                        <div class="bg-emerald-50/50 p-4 rounded-xl">
+                            <span class="block text-xs font-semibold text-slate-500 mb-1">Calories In</span>
+                            <span id="statCalories" class="text-2xl font-bold text-slate-900">0</span>
                         </div>
-                        <div class="bg-teal-50/50 p-4 rounded-xl border border-teal-100/50">
-                            <span class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Workouts</span>
-                            <div class="flex items-baseline gap-1">
-                                <span id="statWorkouts" class="text-2xl font-bold text-slate-900">0</span>
-                                <span class="text-xs text-slate-400 font-medium">completed</span>
-                            </div>
+                        <div class="bg-teal-50/50 p-4 rounded-xl">
+                            <span class="block text-xs font-semibold text-slate-500 mb-1">Workouts</span>
+                            <span id="statWorkouts" class="text-2xl font-bold text-slate-900">0</span>
                         </div>
                     </div>
-
-                    <!-- Visual Progress Metric (Hydration / Activity Ring Simulator) -->
                     <div class="pt-4 border-t border-slate-100">
                         <div class="flex justify-between items-center mb-2">
-                            <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Daily Target Completion</span>
+                            <span class="text-xs font-semibold text-slate-500">Daily Target</span>
                             <span id="progressPct" class="text-xs font-bold text-emerald-600">0%</span>
                         </div>
                         <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
-                            <div id="progressBar" class="bg-gradient-to-r from-emerald-500 to-teal-400 h-full w-0 transition-all duration-500 rounded-full"></div>
+                            <div id="progressBar" class="bg-gradient-to-r from-emerald-500 to-teal-400 h-full w-0 transition-all duration-500"></div>
                         </div>
                     </div>
                 </div>
 
-                <!-- QUICK LOG MODAL INSIDE COLUMN -->
                 <div id="manualLogFormCard" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 hidden">
-                    <h4 class="font-bold text-slate-900 text-sm mb-4">New Fitness / Nutrition Entry</h4>
+                    <h4 class="font-bold text-slate-900 text-sm mb-4">New Entry</h4>
                     <form id="manualLogForm" class="space-y-3">
                         <div>
-                            <label class="block text-xs font-medium text-slate-500 mb-1">Type</label>
-                            <select id="logType" class="w-full text-sm p-2 border border-slate-200 rounded-lg bg-slate-50">
-                                <option value="Meal">Meal / Nutrition</option>
-                                <option value="Workout">Workout / Exercise</option>
+                            <select id="logType" class="w-full text-sm p-2 border border-slate-200 rounded-lg">
+                                <option value="Meal">Meal</option>
+                                <option value="Workout">Workout</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-slate-500 mb-1">Description</label>
-                            <input type="text" id="logDesc" placeholder="e.g., Grilled Chicken Salad or 5k Run" required class="w-full text-sm p-2 border border-slate-200 rounded-lg">
+                            <input type="text" id="logDesc" placeholder="Description" required class="w-full text-sm p-2 border border-slate-200 rounded-lg">
                         </div>
-                        <div id="valueInputContainer">
-                            <label id="valueLabel" class="block text-xs font-medium text-slate-500 mb-1">Estimated Calories</label>
-                            <input type="number" id="logValue" placeholder="e.g., 450" required class="w-full text-sm p-2 border border-slate-200 rounded-lg">
+                        <div>
+                            <input type="number" id="logValue" placeholder="Value" required class="w-full text-sm p-2 border border-slate-200 rounded-lg">
                         </div>
-                        <div class="flex gap-2 pt-2">
-                            <button type="button" id="closeLogCardBtn" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium py-2 rounded-lg transition">Cancel</button>
-                            <button type="submit" class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-medium py-2 rounded-lg transition">Save Entry</button>
+                        <div class="flex gap-2">
+                            <button type="button" id="closeLogCardBtn" class="flex-1 bg-slate-100 text-xs py-2 rounded-lg">Cancel</button>
+                            <button type="submit" class="flex-1 bg-emerald-500 text-white text-xs py-2 rounded-lg">Save</button>
                         </div>
                     </form>
                 </div>
-
             </div>
         </div>
     </main>
 
-    <!-- MODULE SCRIPTS: Firebase Core SDK, Firebase Auth, and Firestore DB -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getFirestore, collection, addDoc, query, where, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // ==========================================
-        // 1. REQ: CLOUD DATABASE & AUTH CONFIGURATION (FIREBASE)
-        // ==========================================
-        // To launch live, swap this object with your actual project keys from your Firebase Console.
-        const firebaseConfig = {
-            apiKey: "AIzaSyDJyDbxplOJoCe-bJP9JACf5Z30-6iuPYg",
-  authDomain: "living-fitness-ai.firebaseapp.com",
-  projectId: "living-fitness-ai",
-  storageBucket: "living-fitness-ai.firebasestorage.app",
-  messagingSenderId: "30528190971",
-  appId: "1:30528190971:web:cb1f034c2dd695c9f5335e",
-  measurementId: "G-RZB8DSG225"
-};
-        // Fallback Initialization Logic to allow immediate offline UI usage if keys aren't updated yet
-        let app, auth, db;
-        try {
-            app = initializeApp(firebaseConfig);
-            auth = getAuth(app);
-            db = getFirestore(app);
-        } catch (e) {
-            console.error("Firebase initializing fallback active. Replace placeholder keys to link your live Firestore database instance.", e);
-        }
-
-        // State variables
-        let currentUser = null;
-        let isSignUpMode = false;
-        let logsUnsubscribe = null;
-
-        // Dom Elements
-        const authContainer = document.getElementById('authContainer');
-        const dashboardContainer = document.getElementById('dashboardContainer');
-        const apiConfigContainer = document.getElementById('apiConfigContainer');
-        const authForm = document.getElementById('authForm');
-        const authEmail = document.getElementById('authEmail');
-        const authPassword = document.getElementById('authPassword');
-        const authTitle = document.getElementById('authTitle');
-        const authSubmitBtn = document.getElementById('authSubmitBtn');
-        const toggleAuthMode = document.getElementById('toggleAuthMode');
-        const userProfile = document.getElementById('userProfile');
-        const userDisplayEmail = document.getElementById('userDisplayEmail');
-        const logoutBtn = document.getElementById('logoutBtn');
-
-        // ==========================================
-        // 2. REQ: USER LOGIN & AUTHENTICATION MANAGEMENT
-        // ==========================================
-        if (auth) {
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    currentUser = user;
-                    userDisplayEmail.textContent = user.email;
-                    authContainer.classList.add('hidden');
-                    dashboardContainer.classList.remove('hidden');
-                    userProfile.classList.remove('hidden');
-                    apiConfigContainer.classList.remove('hidden');
-                    
-                    // Initialize live data feeds from Firestore for this user
-                    setupRealtimeLogs(user.uid);
-                } else {
-                    currentUser = null;
-                    if(logsUnsubscribe) logsUnsubscribe();
-                    authContainer.classList.remove('hidden');
-                    dashboardContainer.classList.add('hidden');
-                    userProfile.classList.add('hidden');
-                    apiConfigContainer.classList.add('hidden');
-                }
-            });
-        }
-
-        // Toggle Sign-In / Sign-Up Presentation
-        toggleAuthMode.addEventListener('click', () => {
-            isSignUpMode = !isSignUpMode;
-            authTitle.textContent = isSignUpMode ? "Create Account" : "Welcome to Living Fitness";
-            authSubmitBtn.textConten    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, where, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-        // ==========================================
-        // 1. CLOUD DATABASE & AUTH CONFIGURATION (FIREBASE)
-        // ==========================================
+        // Integrated with your exact Firebase credentials layout
         const firebaseConfig = {
             apiKey: "AIzaSyDJyDbxplOJoCe-bJP9JACf5Zs-u2lY-b8", 
             authDomain: "living-fitness-ai.firebaseapp.com",
@@ -291,21 +172,14 @@
             appId: "1:30528190971:web:cb1f034c2dd690b20cb3ee"
         };
 
-        let app, auth, db;
-        try {
-            app = initializeApp(firebaseConfig);
-            auth = getAuth(app);
-            db = getFirestore(app);
-        } catch (e) {
-            console.error("Firebase initialization failed:", e);
-        }
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
 
-        // State variables
         let currentUser = null;
         let isSignUpMode = false;
         let logsUnsubscribe = null;
 
-        // Dom Elements
         const authContainer = document.getElementById('authContainer');
         const dashboardContainer = document.getElementById('dashboardContainer');
         const apiConfigContainer = document.getElementById('apiConfigContainer');
@@ -319,31 +193,25 @@
         const userDisplayEmail = document.getElementById('userDisplayEmail');
         const logoutBtn = document.getElementById('logoutBtn');
 
-        // ==========================================
-        // 2. USER LOGIN & AUTHENTICATION MANAGEMENT
-        // ==========================================
-        if (auth) {
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    currentUser = user;
-                    userDisplayEmail.textContent = user.email;
-                    authContainer.classList.add('hidden');
-                    dashboardContainer.classList.remove('hidden');
-                    userProfile.classList.remove('hidden');
-                    apiConfigContainer.classList.remove('hidden');
-                    setupRealtimeLogs(user.uid);
-                } else {
-                    currentUser = null;
-                    if(logsUnsubscribe) logsUnsubscribe();
-                    authContainer.classList.remove('hidden');
-                    dashboardContainer.classList.add('hidden');
-                    userProfile.classList.add('hidden');
-                    apiConfigContainer.classList.add('hidden');
-                }
-            });
-        }
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                userDisplayEmail.textContent = user.email;
+                authContainer.classList.add('hidden');
+                dashboardContainer.classList.remove('hidden');
+                userProfile.classList.remove('hidden');
+                apiConfigContainer.classList.remove('hidden');
+                setupRealtimeLogs(user.uid);
+            } else {
+                currentUser = null;
+                if(logsUnsubscribe) logsUnsubscribe();
+                authContainer.classList.remove('hidden');
+                dashboardContainer.classList.add('hidden');
+                userProfile.classList.add('hidden');
+                apiConfigContainer.classList.add('hidden');
+            }
+        });
 
-        // Toggle Sign-In / Sign-Up Presentation
         toggleAuthMode.addEventListener('click', (e) => {
             e.preventDefault();
             isSignUpMode = !isSignUpMode;
@@ -352,21 +220,10 @@
             toggleAuthMode.textContent = isSignUpMode ? "Already have an account? Sign In" : "Don't have an account? Sign Up";
         });
 
-        // Form Submit Handler for Auth Actions
         authForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = authEmail.value.trim();
             const password = authPassword.value.trim();
-
-            if (!email || !password) {
-                alert("Please fill in both email and password fields.");
-                return;
-            }
-
-            if (password.length < 6) {
-                alert("Firebase requires passwords to be at least 6 characters long.");
-                return;
-            }
 
             try {
                 if (isSignUpMode) {
@@ -376,17 +233,12 @@
                     await signInWithEmailAndPassword(auth, email, password);
                 }
             } catch (error) {
-                alert("🔒 Auth Error:\nCode: " + error.code + "\nMessage: " + error.message);
+                alert("Auth Error: " + error.message);
             }
         });
 
-        logoutBtn.addEventListener('click', () => {
-            if(auth) signOut(auth);
-        });
+        logoutBtn.addEventListener('click', () => signOut(auth));
 
-        // ==========================================
-        // 3. CLOUD DATABASE (FIRESTORE) STORAGE
-        // ==========================================
         const historyLogsContainer = document.getElementById('historyLogsContainer');
         const statCalories = document.getElementById('statCalories');
         const statWorkouts = document.getElementById('statWorkouts');
@@ -394,261 +246,110 @@
         const progressPct = document.getElementById('progressPct');
 
         function setupRealtimeLogs(userId) {
-            if (!db) return;
-            const q = query(
-                collection(db, "fitness_logs"),
-                where("userId", "==", userId),
-                orderBy("timestamp", "desc")
-            );
-
+            const q = query(collection(db, "fitness_logs"), where("userId", "==", userId), orderBy("timestamp", "desc"));
             logsUnsubscribe = onSnapshot(q, (snapshot) => {
                 const logs = [];
-                snapshot.forEach((doc) => {
-                    logs.push({ id: doc.id, ...doc.data() });
-                });
+                snapshot.forEach((doc) => logs.push({ id: doc.id, ...doc.data() }));
                 renderLogsAndStats(logs);
-            }, (error) => {
-                console.error("Firestore error:", error);
-            });
+            }, (error) => console.error(error));
         }
 
         async function saveFitnessLog(type, description, value) {
-            const logData = {
-                userId: currentUser ? currentUser.uid : "unknown",
-                type: type,
-                description: description,
-                value: Number(value),
-                timestamp: new Date().getTime()
-            };
-
-            if (db && currentUser) {
-                try {
-                    await addDoc(collection(db, "fitness_logs"), logData);
-                } catch (e) {
-                    alert("Error saving entry: " + e.message);
-                }
+            if (currentUser) {
+                await addDoc(collection(db, "fitness_logs"), {
+                    userId: currentUser.uid,
+                    type: type,
+                    description: description,
+                    value: Number(value),
+                    timestamp: new Date().getTime()
+                });
             }
         }
 
         function renderLogsAndStats(logs) {
             if(logs.length === 0) {
-                historyLogsContainer.innerHTML = `<p class="text-slate-400 text-sm text-center py-6">No workouts or meals logged yet today.</p>`;
-                statCalories.textContent = "0";
-                statWorkouts.textContent = "0";
-                progressBar.style.width = "0%";
-                progressPct.textContent = "0%";
+                historyLogsContainer.innerHTML = `<p class="text-slate-400 text-sm text-center py-6">No workouts or meals logged yet.</p>`;
+                statCalories.textContent = "0"; statWorkouts.textContent = "0";
+                progressBar.style.width = "0%"; progressPct.textContent = "0%";
                 return;
             }
-
-            let totalCalories = 0;
-            let totalWorkouts = 0;
-            let html = "";
-
+            let totalCalories = 0, totalWorkouts = 0, html = "";
             logs.forEach(log => {
                 const isMeal = log.type === 'Meal';
-                if(isMeal) totalCalories += log.value;
-                else totalWorkouts++;
-
-                const icon = isMeal ? 'fa-utensils text-amber-500 bg-amber-50' : 'fa-dumbbell text-emerald-500 bg-emerald-50';
-                const valueText = isMeal ? `+${log.value} kcal` : `${log.value} min`;
-
-                html += `
-                    <div class="flex items-center justify-between p-3 border border-slate-100 rounded-xl hover:bg-slate-50 transition">
-                        <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-lg flex items-center justify-center text-sm ${icon}"></div>
-                            <div>
-                                <p class="text-sm font-semibold text-slate-800">${log.description}</p>
-                                <p class="text-xs text-slate-400">${new Date(log.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
-                            </div>
-                        </div>
-                        <span class="text-sm font-bold text-slate-700">${valueText}</span>
-                    </div>
-                `;
+                if(isMeal) totalCalories += log.value; else totalWorkouts++;
+                html += `<div class="flex items-center justify-between p-3 border border-slate-100 rounded-xl">
+                    <div><p class="text-sm font-semibold">${log.description}</p></div>
+                    <span class="text-sm font-bold">${isMeal ? '+' + log.value + ' kcal' : log.value + ' min'}</span>
+                </div>`;
             });
-
             historyLogsContainer.innerHTML = html;
             statCalories.textContent = totalCalories;
             statWorkouts.textContent = totalWorkouts;
-
-            const targetScore = ((totalCalories / 2000) * 50) + ((totalWorkouts / 2) * 50);
-            const cappedScore = Math.min(Math.round(targetScore), 100);
-            progressBar.style.width = `${cappedScore}%`;
-            progressPct.textContent = `${cappedScore}%`;
+            const score = Math.min(Math.round(((totalCalories / 2000) * 50) + ((totalWorkouts / 2) * 50)), 100);
+            progressBar.style.width = `${score}%`;
+            progressPct.textContent = `${score}%`;
         }
 
         const manualLogFormCard = document.getElementById('manualLogFormCard');
-        const addLogModalBtn = document.getElementById('addLogModalBtn');
-        const closeLogCardBtn = document.getElementById('closeLogCardBtn');
-        const manualLogForm = document.getElementById('manualLogForm');
-        const logType = document.getElementById('logType');
-        const valueLabel = document.getElementById('valueLabel');
-        const logValue = document.getElementById('logValue');
+        document.getElementById('addLogModalBtn').addEventListener('click', () => manualLogFormCard.classList.remove('hidden'));
+        document.getElementById('closeLogCardBtn').addEventListener('click', () => manualLogFormCard.classList.add('hidden'));
 
-        addLogModalBtn.addEventListener('click', () => manualLogFormCard.classList.remove('hidden'));
-        closeLogCardBtn.addEventListener('click', () => manualLogFormCard.classList.add('hidden'));
-        
-        logType.addEventListener('change', () => {
-            if(logType.value === 'Meal') {
-                valueLabel.textContent = "Estimated Calories";
-                logValue.placeholder = "e.g., 450";
-            } else {
-                valueLabel.textContent = "Duration (Minutes)";
-                logValue.placeholder = "e.g., 45";
-            }
-        });
-
-        manualLogForm.addEventListener('submit', async (e) => {
+        document.getElementById('manualLogForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            await saveFitnessLog(logType.value, document.getElementById('logDesc').value, logValue.value);
-            manualLogForm.reset();
+            await saveFitnessLog(document.getElementById('logType').value, document.getElementById('logDesc').value, document.getElementById('logValue').value);
+            document.getElementById('manualLogForm').reset();
             manualLogFormCard.classList.add('hidden');
         });
 
-        // ==========================================
-        // 4. REAL AI COACH (OPENAI API INTEGRATION)
-        // ==========================================
         const chatForm = document.getElementById('chatForm');
         const chatInput = document.getElementById('chatInput');
         const chatMessages = document.getElementById('chatMessages');
-        const clearChatBtn = document.getElementById('clearChatBtn');
-        const saveKeyBtn = document.getElementById('saveKeyBtn');
-        const openaiApiKeyInput = document.getElementById('openaiApiKey');
-
         let apiKey = localStorage.getItem('lf_openai_key') || "";
-        if(apiKey) {
-            openaiApiKeyInput.value = apiKey;
-            apiConfigContainer.classList.add('opacity-60');
-        }
 
-        saveKeyBtn.addEventListener('click', () => {
-            const key = openaiApiKeyInput.value.trim();
+        if(apiKey) document.getElementById('openaiApiKey').value = apiKey;
+        document.getElementById('saveKeyBtn').addEventListener('click', () => {
+            const key = document.getElementById('openaiApiKey').value.trim();
             if(key.startsWith('sk-')) {
-                localStorage.setItem('lf_openai_key', key);
-                apiKey = key;
-                alert("API Key saved securely!");
-                apiConfigContainer.classList.add('opacity-60');
-            } else {
-                alert("Invalid configuration template. Key must start with 'sk-'.");
-            }
-        });
-
-        clearChatBtn.addEventListener('click', () => {
-            chatMessages.innerHTML = `
-                <div class="flex gap-3 max-w-[85%]">
-                    <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center flex-shrink-0 text-slate-600"><i class="fa-solid fa-robot"></i></div>
-                    <div class="bg-slate-100 text-slate-800 p-3 rounded-2xl rounded-tl-none leading-relaxed">
-                        Chat memory wiped cleanly. How can your <strong>Living Fitness Coach</strong> guide you now?
-                    </div>
-                </div>
-            `;
+                localStorage.setItem('lf_openai_key', key); apiKey = key; alert("Saved!");
+            } else alert("Invalid key format.");
         });
 
         chatForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const userMessageText = chatInput.value.trim();
-            if(!userMessageText) return;
-
-            appendMessage(userMessageText, true);
-            chatInput.value = "";
-
-            if(!apiKey) {
-                appendMessage("System notice: Please provide an OpenAI API key in the configuration card above.", false);
-                return;
-            }
-
-            const thinkingId = appendThinkingIndicator();
-
+            const txt = chatInput.value.trim(); if(!txt) return;
+            appendMsg(txt, true); chatInput.value = "";
+            if(!apiKey) { appendMsg("Please save an OpenAI API key first.", false); return; }
+            
             try {
-                const response = await fetch("https://api.openai.com/v1/chat/completions", {
+                const res = await fetch("https://api.openai.com/v1/chat/completions", {
                     method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${apiKey}`
-                    },
+                    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${apiKey}` },
                     body: JSON.stringify({
                         model: "gpt-4o-mini",
                         messages: [
-                            {
-                                role: "system",
-                                content: `You are the highly motivating and expert 'Living Fitness AI Coach'. You provide quick, clear athletic training guidance and precise actionable meal metrics. 
-                                CRITICAL FEATURE: If a user specifies logging activity or food intake, you MUST conclude your exact paragraph answer block with an explicit structured syntax processing command payload matching structural lines:
-                                [COMMAND:LOG:Meal:Description Here:CalorieNumericValue] or [COMMAND:LOG:Workout:Description Here:MinuteDurationValue].`
-                            },
-                            { role: "user", content: userMessageText }
-                        ],
-                        temperature: 0.7
+                            { role: "system", content: "You are the Living Fitness AI Coach. If the user logs an entry, include [COMMAND:LOG:Meal:Desc:Cal] or [COMMAND:LOG:Workout:Desc:Min] at the very end." },
+                            { role: "user", content: txt }
+                        ]
                     })
                 });
-
-                const data = await response.json();
-                document.getElementById(thinkingId).remove();
-
-                if(data.choices && data.choices[0]) {
-                    let coachReply = data.choices[0].message.content;
-                    coachReply = checkAndExecuteAiCommands(coachReply);
-                    appendMessage(coachReply, false);
-                } else {
-                    appendMessage("Error parsing feedback from OpenAI. Verify your billing and usage limits.", false);
+                const data = await res.json();
+                if(data.choices) {
+                    let reply = data.choices[0].message.content;
+                    const match = reply.match(/\[COMMAND:LOG:(Meal|Workout):([^:]+):(\d+)\]/);
+                    if(match) {
+                        await saveFitnessLog(match[1], match[2], match[3]);
+                        reply = reply.replace(/\[COMMAND:LOG:[^\]]+\]/, "\n\n⚡ *[Logged automatically!]*");
+                    }
+                    appendMsg(reply, false);
                 }
-
-            } catch (err) {
-                console.error(err);
-                document.getElementById(thinkingId).remove();
-                appendMessage("Network connection interrupted handling remote API response.", false);
-            }
+            } catch (err) { appendMsg("Connection error.", false); }
         });
 
-        function appendMessage(text, isUser) {
-            const msgRow = document.createElement('div');
-            msgRow.className = `flex gap-3 max-w-[85%] ${isUser ? 'ml-auto flex-row-reverse' : ''}`;
-            
-            const iconClass = isUser ? 'fa-user text-emerald-600 bg-emerald-50' : 'fa-robot text-slate-600 bg-slate-100';
-            const textBg = isUser ? 'bg-emerald-500 text-white rounded-tr-none' : 'bg-slate-100 text-slate-800 rounded-tl-none';
-
-            msgRow.innerHTML = `
-                <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-xs ${iconClass}">
-                    <i class="fa-solid ${iconClass.split(' ')[0]}"></i>
-                </div>
-                <div class="${textBg} p-3 rounded-2xl leading-relaxed whitespace-pre-line">
-                    ${text}
-                </div>
-            `;
-            chatMessages.appendChild(msgRow);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-
-        function appendThinkingIndicator() {
-            const id = 'thinking_' + Date.now();
-            const msgRow = document.createElement('div');
-            msgRow.id = id;
-            msgRow.className = "flex gap-3 max-w-[85%]";
-            msgRow.innerHTML = `
-                <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center flex-shrink-0 text-xs text-slate-600">
-                    <i class="fa-solid fa-robot"></i>
-                </div>
-                <div class="bg-slate-100 text-slate-400 p-3 rounded-2xl rounded-tl-none flex items-center gap-1">
-                    <span class="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce"></span>
-                    <span class="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce [animation-delay:0.2s]"></span>
-                    <span class="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce [animation-delay:0.4s]"></span>
-                </div>
-            `;
-            chatMessages.appendChild(msgRow);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-            return id;
-        }
-
-        function checkAndExecuteAiCommands(text) {
-            const commandRegex = /\[COMMAND:LOG:(Meal|Workout):([^:]+):(\d+)\]/;
-            const match = text.match(commandRegex);
-            
-            if(match) {
-                const type = match[1];
-                const desc = match[2];
-                const value = match[3];
-                saveFitnessLog(type, desc, value);
-                text = text.replace(commandRegex, `\n\n⚡ *[Automated System: Successfully logged this entry to your ${type} history]*`);
-            }
-            return text;
+        function appendMsg(t, u) {
+            const d = document.createElement('div');
+            d.className = `p-3 rounded-2xl max-w-[85%] ${u ? 'bg-emerald-500 text-white ml-auto' : 'bg-slate-100 text-slate-800'}`;
+            d.innerText = t; chatMessages.appendChild(d); chatMessages.scrollTop = chatMessages.scrollHeight;
         }
     </script>
-
+</body>
+</html>
